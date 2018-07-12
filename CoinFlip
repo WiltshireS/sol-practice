@@ -1,0 +1,42 @@
+pragma solidity ^0.4.0;
+contract CoinFlip {
+
+// Holds the final outcome. Odd for tails, even for heads. 
+string public result;
+
+// Betting range set by game initiator
+uint public maxBet;
+uint public minBet;
+
+// Current flip 
+uint public commitPhaseEndTime;
+uint public numberOfVotesCast;
+
+struct Bet {
+    string betStatus;
+    uint betAmount;
+    string _password;
+}
+
+// Map addresses to the player's bets
+mapping( address => Bet);
+
+// Hold them in an array so we can iterate through them later.
+address[] playerBets;
+
+constructor coinFlip(
+                    uint _commitPhaseLengthInSeconds,
+                    uint _maxBet,
+                    uint _minBet) {
+    require(_minBet > 0 && _commitPhaseLengthInSeconds > 60);
+    maxBet = _maxBet;
+    minBet = _minBet
+    commitPhaseEndTime = now + _commitPhaseLengthInSeconds;
+}
+
+function commitBet(bytes32 _betCommit, uint _betAmount, address msg.sender){
+    
+}
+
+
+}
