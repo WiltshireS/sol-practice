@@ -10,10 +10,11 @@ uint public minBet;
 
 // Current flip 
 uint public commitPhaseEndTime;
-uint public numberOfVotesCast;
+uint public numberOfVotesCast = 0;
 
 // Map addresses to the player's bets
 mapping(address => uint) betAmount;
+mapping(address => bytes32) betCommits;
 
 // Hold them in an array so we can iterate through them later.
 address[] playerBets;
@@ -26,9 +27,14 @@ constructor (uint256 _commitPhaseLengthInSeconds,uint _maxBet, uint _minBet) pub
 }
 
 function commitBet(bytes32 _betCommit) public payable {
-    require(msg.value >= minBet && msg.value <= maxBet);
+    require(msg.value >= minBet && msg.value <= maxBet && now < commitPhaseEndTime );
     betAmount[msg.sender] = msg.value;
+    betCommits[msg.sender] = _betCommit; 
+    numberOfVotesCast++;
+    
 }
 
 
+
 }
+
