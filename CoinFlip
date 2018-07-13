@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.2;
 contract CoinFlip {
 
 // Holds the final outcome. Odd for tails, even for heads. 
@@ -13,23 +13,21 @@ uint public commitPhaseEndTime;
 uint public numberOfVotesCast;
 
 // Map addresses to the player's bets
-mapping( address => Bet);
+mapping(address => uint) betAmount;
 
 // Hold them in an array so we can iterate through them later.
 address[] playerBets;
 
-constructor coinFlip(
-                    uint _commitPhaseLengthInSeconds,
-                    uint _maxBet,
-                    uint _minBet) {
+constructor (uint256 _commitPhaseLengthInSeconds,uint _maxBet, uint _minBet) public {
     require(_minBet > 0 && _commitPhaseLengthInSeconds > 60);
     maxBet = _maxBet;
-    minBet = _minBet
+    minBet = _minBet;
     commitPhaseEndTime = now + _commitPhaseLengthInSeconds;
 }
 
-function commitBet(bytes32 _betCommit, uint _betAmount, address msg.sender){
-    
+function commitBet(bytes32 _betCommit) public payable {
+    require(msg.value >= minBet && msg.value <= maxBet);
+    betAmount[msg.sender] = msg.value;
 }
 
 
