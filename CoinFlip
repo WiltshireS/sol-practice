@@ -12,12 +12,6 @@ uint public minBet;
 uint public commitPhaseEndTime;
 uint public numberOfVotesCast;
 
-struct Bet {
-    string betStatus;
-    uint betAmount;
-    string _password;
-}
-
 // Map addresses to the player's bets
 mapping( address => Bet);
 
