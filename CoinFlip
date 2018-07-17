@@ -5,8 +5,7 @@ contract CoinFlip {
 bool public result;
 
 // Betting range set by game initiator
-uint public maxBet;
-uint public minBet;
+uint public betAmount;
 
 // Current flip 
 uint public commitPhaseEndTime;
@@ -15,22 +14,22 @@ uint public pot;
 
 // Map addresses to the player's bets
 mapping(address => bytes32) betCommits;
-mapping(address => bool)  
+mapping(address => bool) finalBets;
 
 // Hold them in an array so we can iterate through them later.
 uint[] playerBets;
 
-constructor (uint256 _commitPhaseLengthInSeconds,uint _maxBet, uint _minBet) public {
+
+constructor (uint256 _commitPhaseLengthInSeconds,uint _betAmount) public {
     require(_minBet > 0 && _commitPhaseLengthInSeconds > 60);
-    maxBet = _maxBet;
-    minBet = _minBet;
+    betAmount = _betAmount;
     commitPhaseEndTime = now + _commitPhaseLengthInSeconds;
 }
 
 
 // Accept a hash of the players bet choice 1 or 0 and their chosen password 
 function commitBet(bytes32 _betCommit) public payable {
-    require(msg.value >= minBet && msg.value <= maxBet && now < commitPhaseEndTime );
+    require(msg.value == betAmount && now < commitPhaseEndTime && numberOfBets <= 2);
     
     if (betCommits[msg.sender] == 0){
      pot += msg.value; 
@@ -41,17 +40,15 @@ function commitBet(bytes32 _betCommit) public payable {
 
 
 // Get the senders choice and password to verify their bet 
-function revealBets(string _choices, string _password) public {
+function revealBets(string _choice, string _password) public {
     // Ensure we're after the commit phase 
     require(now > commitPhaseEndTime);
-    if (betCommits[msg.sender] == keccak256(_choice, _password)){
-        
+    if (betCommits[msg.sender] == keccak256( _choice, _password)){
+     finalBets[msg.sender] = _choice;
     }
 }
 
 
 function revealResult(){
     
-}
-
 }
