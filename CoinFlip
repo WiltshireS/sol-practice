@@ -2,7 +2,7 @@ pragma solidity ^0.4.2;
 contract CoinFlip {
 
 // Holds the final outcome. Odd for tails, even for heads. 
-string public result;
+bool public result;
 
 // Betting range set by game initiator
 uint public maxBet;
@@ -10,14 +10,15 @@ uint public minBet;
 
 // Current flip 
 uint public commitPhaseEndTime;
-uint public numberOfVotesCast = 0;
+uint public numberOfBets = 0;
+uint public pot;
 
 // Map addresses to the player's bets
-mapping(address => uint) betAmount;
 mapping(address => bytes32) betCommits;
+mapping(address => bool)  
 
 // Hold them in an array so we can iterate through them later.
-address[] playerBets;
+uint[] playerBets;
 
 constructor (uint256 _commitPhaseLengthInSeconds,uint _maxBet, uint _minBet) public {
     require(_minBet > 0 && _commitPhaseLengthInSeconds > 60);
@@ -26,15 +27,31 @@ constructor (uint256 _commitPhaseLengthInSeconds,uint _maxBet, uint _minBet) pub
     commitPhaseEndTime = now + _commitPhaseLengthInSeconds;
 }
 
+
+// Accept a hash of the players bet choice 1 or 0 and their chosen password 
 function commitBet(bytes32 _betCommit) public payable {
     require(msg.value >= minBet && msg.value <= maxBet && now < commitPhaseEndTime );
-    betAmount[msg.sender] = msg.value;
-    betCommits[msg.sender] = _betCommit; 
-    numberOfVotesCast++;
+    
+    if (betCommits[msg.sender] == 0){
+     pot += msg.value; 
+     betCommits[msg.sender] = _betCommit; 
+     numberOfBets++;
+    }
+}
+
+
+// Get the senders choice and password to verify their bet 
+function revealBets(string _choices, string _password) public {
+    // Ensure we're after the commit phase 
+    require(now > commitPhaseEndTime);
+    if (betCommits[msg.sender] == keccak256(_choice, _password)){
+        
+    }
+}
+
+
+function revealResult(){
     
 }
 
-
-
 }
-
