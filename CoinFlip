@@ -95,7 +95,7 @@ function revealResult(
      }else{
         result = false; 
      }
-     
+  
      // If both players get it right
     if(players[challenger].choice == result && players[originator].choice == result){
     payout(originator,2);
@@ -129,7 +129,9 @@ function payout(
     )
     private
     {
+    balance -= (pot /percent);
     payee.transfer((balance + pot)/percent);
+
     }
 
 }
