@@ -12,8 +12,9 @@ uint public commitPhaseEndTime;
 uint public pot = 0;
 
 
-
 struct player {
+// originator or challenger
+string name;
 // Players choice hashed with their password 
 bytes32 _betCommit;
 // The revealed bet choice 
@@ -29,6 +30,16 @@ mapping(address => player) public players;
 address originator;
 address challenger;
 
+event betBegin(
+     uint commitPhaseEndTime
+    ,uint potValue);
+    
+event betRevealed(
+     string name
+    ,bool betStatus);
+    
+event winner(
+     string name);
 
 // The bet amount of the contract is set by the originator. This person is originator.
 constructor (
@@ -43,6 +54,8 @@ constructor (
     commitPhaseEndTime = now + _commitPhaseLengthInSeconds;
     players[msg.sender]._betCommit = _betCommit;
     pot += msg.value;
+    players[msg.sender].name = "originator";
+    emit betBegin(commitPhaseEndTime, pot);
 }
 
 // Fall back 
@@ -64,6 +77,7 @@ function challengerCommitBet(
     // ensure the challenger's bet matches the originator
     require(msg.value == pot && now < commitPhaseEndTime && challenger == 0);
     challenger = msg.sender;
+    players[msg.sender].name = "challenger";
     pot += msg.value; 
     players[msg.sender]._betCommit = _betCommit; 
 }
@@ -82,6 +96,7 @@ function revealBets(
     if (players[msg.sender]._betCommit == keccak256(abi.encodePacked(_choice, _password))){
      players[msg.sender].choice = _choice;
      players[msg.sender].betStatus = true;
+     emit betRevealed(players[msg.sender].name, players[msg.sender].betStatus);
     }
     
 }
@@ -99,7 +114,9 @@ function revealResult(
      // If both players get it right
     if(players[challenger].choice == result && players[originator].choice == result){
     payout(originator,2);
+    emit winner(players[originator].name);
     payout(challenger,2);
+    emit winner(players[challenger].name);
     pot = 0;
     return;
     }
@@ -107,6 +124,7 @@ function revealResult(
     // If the challenger gets it right
     if(players[challenger].choice == result){
     payout(challenger,1);
+    emit winner(players[challenger].name);
     pot = 0;
     return;  
     }
@@ -114,6 +132,7 @@ function revealResult(
     // if the originator gets it right
     if(players[originator].choice == result){
     payout(originator,1);
+    emit winner(players[originator].name);
     pot = 0;
     return;
     }
