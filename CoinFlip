@@ -4,51 +4,81 @@ contract CoinFlip {
 // Holds the final outcome. Odd for tails, even for heads. 
 bool public result;
 
-// Betting range set by game initiator
-uint public betAmount;
 
 // Current flip 
 uint public commitPhaseEndTime;
-uint public numberOfBets = 0;
-uint public pot;
+uint public pot = 0;
+
+
+struct player {
+// Players choice hashed with their password 
+bytes32 _betCommit;
+// The revealed bet choice 
+bool choice;
+// true is revealed
+bool betStatus;
+}
 
 // Map addresses to the player's bets
-mapping(address => bytes32) betCommits;
-mapping(address => bool) finalBets;
+mapping(address => player) public players;
 
-// Hold them in an array so we can iterate through them later.
-uint[] playerBets;
+// Track the originator and the challengers
+address originator;
+address challenger;
 
 
-constructor (uint256 _commitPhaseLengthInSeconds,uint _betAmount) public {
-    require(_minBet > 0 && _commitPhaseLengthInSeconds > 60);
-    betAmount = _betAmount;
+// The bet amount of the contract is set by the originator. This person is originator.
+constructor (
+     uint256 _commitPhaseLengthInSeconds
+    ,bytes32 _betCommit
+    ) 
+    public 
+    payable 
+    {
+    require(msg.value > 0 && _commitPhaseLengthInSeconds > 60);
+    originator = msg.sender;
     commitPhaseEndTime = now + _commitPhaseLengthInSeconds;
+    players[msg.sender]._betCommit = _betCommit;
+    pot += msg.value;
 }
 
 
-// Accept a hash of the players bet choice 1 or 0 and their chosen password 
-function commitBet(bytes32 _betCommit) public payable {
-    require(msg.value == betAmount && now < commitPhaseEndTime && numberOfBets <= 2);
-    
-    if (betCommits[msg.sender] == 0){
-     pot += msg.value; 
-     betCommits[msg.sender] = _betCommit; 
-     numberOfBets++;
-    }
+// Accept the challengers bet commit, ensure the challenger has not already entered and the value matches the betAmount
+function challengerCommitBet(
+    bytes32 _betCommit
+    ) 
+    public 
+    payable 
+    {
+    // ensure the challenger's bet matches the originator
+    require(msg.value == pot && now < commitPhaseEndTime && challenger == 0);
+    challenger = msg.sender;
+    pot += msg.value; 
+    players[msg.sender]._betCommit = _betCommit; 
 }
 
 
 // Get the senders choice and password to verify their bet 
-function revealBets(string _choice, string _password) public {
+function revealBets(
+     bool _choice
+    ,string _password
+    ) 
+    public 
+    {
     // Ensure we're after the commit phase 
     require(now > commitPhaseEndTime);
-    if (betCommits[msg.sender] == keccak256( _choice, _password)){
-     finalBets[msg.sender] = _choice;
+    if (players[msg.sender]._betCommit == keccak256( _choice, _password)){
+     players[msg.sender].choice = _choice;
+     players[msg.sender].betStatus = true;
     }
+    
 }
 
 
 function revealResult(){
+    bool result = keccak256( players[originator]._betCommit, players[challenger]._betCommit ) % 2 ;
     
+    
+}
+
 }
