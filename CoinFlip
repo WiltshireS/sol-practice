@@ -4,10 +4,13 @@ contract CoinFlip {
 // Holds the final outcome. Odd for tails, even for heads. 
 bool public result;
 
+//Contract balance for rollover
+uint balance;
 
 // Current flip 
 uint public commitPhaseEndTime;
 uint public pot = 0;
+
 
 
 struct player {
@@ -42,6 +45,14 @@ constructor (
     pot += msg.value;
 }
 
+// Fall back 
+function(
+    )
+    public 
+    payable
+    {
+    balance += msg.value;
+}
 
 // Accept the challengers bet commit, ensure the challenger has not already entered and the value matches the betAmount
 function challengerCommitBet(
@@ -75,7 +86,8 @@ function revealBets(
     
 }
 
-function revealResult()
+function revealResult(
+    )
      public 
      {
      if( uint(keccak256( abi.encodePacked(players[challenger]._betCommit,players[originator]._betCommit) )) % 2 == 0) {
@@ -88,26 +100,36 @@ function revealResult()
     if(players[challenger].choice == result && players[originator].choice == result){
     payout(originator,2);
     payout(challenger,2);
+    pot = 0;
     return;
     }
     
     // If the challenger gets it right
     if(players[challenger].choice == result){
     payout(challenger,1);
+    pot = 0;
     return;  
     }
     
     // if the originator gets it right
     if(players[originator].choice == result){
     payout(originator,1);
+    pot = 0;
     return;
     }
+    
+    //if both players get it wrong then add the pot to the contract balance
+    balance += pot;
+    pot = 0;
 }
 
-function payout(address payee,uint percent)
+function payout(
+     address payee
+    ,uint percent
+    )
     private
     {
-    payee.transfer(pot/percent);
+    payee.transfer((balance + pot)/percent);
     }
 
 }
