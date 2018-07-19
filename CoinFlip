@@ -39,7 +39,8 @@ event betRevealed(
     ,bool betStatus);
     
 event winner(
-     string name);
+     string name
+    ,uint payAmount);
 
 // The bet amount of the contract is set by the originator. This person is originator.
 constructor (
@@ -114,9 +115,7 @@ function revealResult(
      // If both players get it right
     if(players[challenger].choice == result && players[originator].choice == result){
     payout(originator,2);
-    emit winner(players[originator].name);
     payout(challenger,2);
-    emit winner(players[challenger].name);
     pot = 0;
     return;
     }
@@ -124,7 +123,6 @@ function revealResult(
     // If the challenger gets it right
     if(players[challenger].choice == result){
     payout(challenger,1);
-    emit winner(players[challenger].name);
     pot = 0;
     return;  
     }
@@ -132,11 +130,9 @@ function revealResult(
     // if the originator gets it right
     if(players[originator].choice == result){
     payout(originator,1);
-    emit winner(players[originator].name);
     pot = 0;
     return;
     }
-    
     //if both players get it wrong then add the pot to the contract balance
     balance += pot;
     pot = 0;
@@ -144,13 +140,14 @@ function revealResult(
 
 function payout(
      address payee
-    ,uint percent
+    ,uint split
     )
     private
     {
-    balance -= (pot /percent);
-    payee.transfer((balance + pot)/percent);
-
+    uint payAmount = (pot / split);
+    balance -= payAmount;
+    payee.transfer(payAmount);
+    emit winner(players[payee].name,payAmount);
     }
 
 }
