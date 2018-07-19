@@ -147,7 +147,7 @@ function payout(
     uint payAmount = (pot / split);
     balance -= payAmount;
     payee.transfer(payAmount);
-    emit winner(players[payee].name,payAmount);
+    emit winner(players[payee].name, payAmount);
     }
 
 }
